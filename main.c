@@ -173,4 +173,4 @@ LRESULT CALLBACK WindowProc(
 
 
 
-// g++ -mwindows winapp.c
+// g++ -mwindows main.c
