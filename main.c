@@ -1,57 +1,83 @@
 #include <stdio.h>
 #include <windows.h>
-//#include "script.c"
 
 #define WIDTH 200
 #define HEIGHT 100
+#define BUTTON1 01
+#define BUTTON2 02
+#define INPUT1  011
+#define MAX_INPUT_LEN 70
+#define MAX_SECOND_LEN 10
 
-void ShutDown(){
-    system("dir");
-}
 HINSTANCE hAppInstance;    //应用程序句柄，因为要使用的地方太多需要定义成全局变量；在winmain函数中给它赋值
+char cmd[80] = "Shutdown -r -t ";
+char secondList[MAX_SECOND_LEN];
+int second;
+
+// 开关机函数
+void shutDown(){
+    if (0 < second && second < 315360000){
+        strcat(cmd, itoa(second, secondList, 10));
+        system("shutdown -a");
+        system(cmd);
+        printf("%s\n", secondList);
+        printf("%s", cmd);
+    }
+//
+}
+void unShutDown(){
+    system("shutdown -a");
+}
 
 //创建按钮
 void CreateButton(HWND hwnd)
 {
-    HWND hwndPushButton;
-    HWND hwndCheckBox;
-    HWND hwndRadio;
+    HWND hwndPushButton1;
+    HWND hwndPushButton2;
 
-    hwndPushButton = CreateWindow (
+    hwndPushButton1 = CreateWindow (
             TEXT("button"),
-            TEXT("普通按钮"),
-    //WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,                            
+            TEXT("确认"),
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
             100, 50,
-            80, 20,
+            40, 20,
             hwnd,
-            (HMENU)1001,        //子窗口ID                    
+            (HMENU)BUTTON1,        //子窗口ID
             hAppInstance,         //应用程序的句柄，                        
             NULL);
-
-    hwndRadio = CreateWindow (
+    hwndPushButton2 = CreateWindow (
             TEXT("button"),
-            TEXT("单选按钮"),
-    //WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON | BS_AUTORADIOBUTTON,                            
-            WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON  ,
-            10, 70,
-            80, 20,
+            TEXT("取消"),
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
+            150, 50,
+            40, 20,
             hwnd,
-            (HMENU)1003,        //子窗口ID                    
-            hAppInstance,
+            (HMENU)BUTTON2,        //子窗口ID
+            hAppInstance,         //应用程序的句柄，
             NULL);
 }
+//创建输入框
 
+void CreateInput(HWND hwnd){
 
+    CreateWindow (
+            TEXT("edit"),
+            TEXT("3600"),
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
+            10, 50,
+            MAX_INPUT_LEN, 20,
+            hwnd,
+            (HMENU)INPUT1,        //子窗口ID
+            hAppInstance,         //应用程序的句柄，
+            NULL);
+}
 //声明回调函数
 LRESULT CALLBACK WindowProc(
         IN  HWND hwnd,
         IN  UINT uMsg,
         IN  WPARAM wParam,
         IN  LPARAM lParam
-
 );
-
 
 int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，也就是内平栈，win32所有api函数都是该调用约定
         HINSTANCE hInstance,
@@ -60,8 +86,7 @@ int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，
         int nCmdShow
 ){
     hAppInstance = hInstance;    //给全局变量赋值
-
-
+    
     //1.告诉window要画一个什么样的窗口                                    
     TCHAR className[] = "My First Window";     //窗口的类名                                                                    
     // 创建窗口类的对象                                     
@@ -69,17 +94,15 @@ int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，
     wndclass.hbrBackground = (HBRUSH)COLOR_MENU;                        //窗口的背景色            
     wndclass.lpfnWndProc =  WindowProc;                        //窗口过程函数            
     wndclass.lpszClassName = className;                        //窗口类的名字            
-    wndclass.hInstance = hInstance;                        //定义窗口类的应用程序的实例句柄            
-
+    wndclass.hInstance = hInstance;                        //定义窗口类的应用程序的实例句柄
 
     //2.注册窗口类
     RegisterClass(&wndclass);
 
-
     //3.创建窗口类
     HWND hwnd = CreateWindow(
             className,                //类名,可以用自己定义的窗口My First Window，也可用系统定义好的窗口例如按钮button        
-            TEXT("我的第一个窗口"),                //窗口标题
+            TEXT("定时关机"),                //窗口标题
             WS_SYSMENU,                //窗口外观样式
             (GetSystemMetrics(SM_CXSCREEN) - WIDTH) >> 1,                //相对于父窗口的X坐标
             (GetSystemMetrics(SM_CYSCREEN) - HEIGHT) >> 1,                //相对于父窗口的Y坐标
@@ -94,12 +117,11 @@ int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，
         return 0;
 
     CreateButton(hwnd);        //创建按钮，需要在父窗口创建成功后调用
-
-
+    CreateInput(hwnd);          //创建输入框
+    
     //4.显示窗口
     ShowWindow(hwnd, SW_SHOW);
-
-
+    
     //5.消息循环
     MSG msg;
     while(GetMessage(&msg, NULL, 0, 0))
@@ -110,65 +132,43 @@ int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，
     return 0;
 }
 
-
 //6.回调函数，由操作系统来调用
 /*                    
-窗口消息处理程序 窗口回调函数：                    
-                    
-1、窗口回调函数处理过的消息，必须传回0.                    
-                    
+窗口消息处理程序 窗口回调函数：
+1、窗口回调函数处理过的消息，必须传回0.
 2、窗口回调不处理的消息，由DefWindowProc来处理.                    
 */
-
 
 LRESULT CALLBACK WindowProc(
         IN  HWND hwnd,
         IN  UINT uMsg,
         IN  WPARAM wParam,
         IN  LPARAM lParam
-)
-{
-    switch(uMsg)
-    {
-        //窗口消息                            
-        case WM_CREATE:
-        {
-//            printf("WM_CREATE %d %d\n",wParam,lParam);
-            CREATESTRUCT* createst = (CREATESTRUCT*)lParam;
-//            printf("CREATESTRUCT %s\n",createst->lpszClass);
+) {
+    switch (uMsg) {
 
-            return 0;
-        }
         // 退出事件
-        case WM_DESTROY:
-        {
-            printf("WM_DESTROY %d %d\n",wParam,lParam);
+        case WM_DESTROY: {
             PostQuitMessage(0);
-
-            return 0;
-        }
-            //键盘事件
-        case WM_KEYUP:
-        {
-            printf("WM_KEYUP %d %d\n",wParam,lParam);
-
-            return 0;
-        }
-        case WM_KEYDOWN:
-        {
-            printf("WM_KEYDOWN %d %d\n",wParam,lParam);
-
-            return 0;
+            break;
         }
             //按钮消息
-        case WM_COMMAND:
-        {
-            return DefWindowProc(hwnd,uMsg,wParam,lParam);
-        }
-    }
-    return DefWindowProc(hwnd,uMsg,wParam,lParam);
-}
+        case WM_COMMAND: {
+            HWND controlHandle = (HWND)lParam;
+            if (LOWORD(wParam) == BUTTON1) {
 
+                second = GetDlgItemInt(hwnd,INPUT1,NULL,0);
+                shutDown();
+                PostQuitMessage(0);
+            } else if (LOWORD(wParam) == BUTTON2) {
+                unShutDown();
+                PostQuitMessage(0);
+            }
+        }
+        default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+}
 
 
 
