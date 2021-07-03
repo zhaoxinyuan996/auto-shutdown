@@ -28,6 +28,7 @@
 #define MAX_SECOND_LEN 10
 #define SPACE 60
 
+HWND INP;
 HWND UD1;
 HWND UD2;
 HWND UD3;
@@ -44,20 +45,17 @@ void setupTime(){
     time.min = 0;
     time.sec = 0;
 }
+
 // 开关机函数
 void shutDown(){
-
-//    if (0 < second && second < 315360000){
-//        strcat(cmd, itoa(second, secondList, 10));
-////        system("shutdown -a");
-////        system(cmd);
-//        printf("%s\n", secondList);
-//        printf("%s", cmd);
-//    }
-
+    strcat(cmd, itoa(second, secondList, 10));
+        system("shutdown -a");
+        system(cmd);
+    printf("%s\n", secondList);
+    printf("%s", cmd);
 }
 void unShutDown(){
-//    system("shutdown -a");
+    system("shutdown -a");
 }
 void CreateText(HDC hdc){
     int start = 100;
@@ -79,36 +77,52 @@ void checkInput(HWND hwnd,int nIDDlgItem, HWND ud, int mmax){
     }
 
     if (input > mmax){
-//        SetDlgItemInt(hwnd, nIDDlgItem, mmax,0);
-        switch (nIDDlgItem) {
-            case INPUT2:
-                PostMessage(UD1, UDM_SETPOS32, 0, mmax);
-                time.day = mmax;
-                break;
-            case INPUT3:
-                PostMessage(UD2, UDM_SETPOS32, 0, mmax);
-                time.hour = mmax;
-                break;
-            case INPUT4:
-                PostMessage(UD3, UDM_SETPOS32, 0, mmax);
-                time.min = mmax;
-                break;
-            case INPUT5:
-                PostMessage(UD4, UDM_SETPOS32, 0, mmax);
-                time.sec = mmax;
-                break;
-            default:
-            {}
+        if (nIDDlgItem == INPUT1) {
+            SetDlgItemInt(hwnd, nIDDlgItem, mmax,0);
+        } else{
+            switch (nIDDlgItem) {
+                case INPUT2:
+                    SendMessage(UD1, UDM_SETPOS32, 0, mmax);
+                    time.day = mmax;
+                    break;
+                case INPUT3:
+                    SendMessage(UD2, UDM_SETPOS32, 0, mmax);
+                    time.hour = mmax;
+                    break;
+                case INPUT4:
+                    SendMessage(UD3, UDM_SETPOS32, 0, mmax);
+                    time.min = mmax;
+                    break;
+                case INPUT5:
+                    SendMessage(UD4, UDM_SETPOS32, 0, mmax);
+                    time.sec = mmax;
+                    break;
+                default:
+                {}
+            }
+            SendMessage(ud, UDM_SETPOS32, 0, time.day);
         }
-        PostMessage(ud, UDM_SETPOS32, 0, time.day);
     }
     // 秒 -> time
     if (nIDDlgItem == INPUT1){
         SecondToTime((int) GetDlgItemInt(hwnd, INPUT1,NULL,0));
-        PostMessage(UD1, UDM_SETPOS32, 0, time.day);
-        PostMessage(UD2, UDM_SETPOS32, 0, time.hour);
-        PostMessage(UD3, UDM_SETPOS32, 0, time.min);
-        PostMessage(UD4, UDM_SETPOS32, 0, time.sec);
+        SendMessage(UD1, UDM_SETPOS32, 0, time.day);
+        SendMessage(UD2, UDM_SETPOS32, 0, time.hour);
+        SendMessage(UD3, UDM_SETPOS32, 0, time.min);
+        SendMessage(UD4, UDM_SETPOS32, 0, time.sec);
+
+//        DestroyCaret();
+//        CreateCaret(INP, 0, 4, 18);
+//        ShowCaret(INP);
+//        SetFocus(INP);
+//        POINT point;
+//        SetCaretPos(60, 4); //TODO
+//        point.x = 600;
+//        point.y = 40;
+
+//        printf("%u\n", GetDlgItemText(INP, 0, 0, 0));
+
+
     } else{  // time -> 秒
         switch (nIDDlgItem) {
             case INPUT2:
@@ -140,7 +154,11 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
     switch (wParam) {
         case UPDOWN1:
         {
-            if (0 <= time.day + shift && time.day + shift <= 99){
+            if (time.day + shift < 0){
+                time.day = 99;
+            } else if(time.day + shift > 99){
+                time.day = 0;
+            } else{
                 time.day += shift;
             }
             PostMessage(UD1, UDM_SETPOS32, 0, time.day);
@@ -148,7 +166,11 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
         }
         case UPDOWN2:
         {
-            if (0 <= time.hour + shift && time.hour + shift <= 23){
+            if (time.hour + shift < 0){
+                time.hour = 23;
+            } else if(time.hour + shift > 23){
+                time.hour = 0;
+            } else{
                 time.hour += shift;
             }
             PostMessage(UD2, UDM_SETPOS32, 0, time.hour);
@@ -156,7 +178,11 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
         }
         case UPDOWN3:
         {
-            if (0 <= time.min + shift && time.min + shift <= 59){
+            if (time.min + shift < 0){
+                time.min = 99;
+            } else if(time.min + shift > 59){
+                time.min = 0;
+            } else{
                 time.min += shift;
             }
             PostMessage(UD3, UDM_SETPOS32, 0, time.min);
@@ -164,7 +190,11 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
         }
         case UPDOWN4:
         {
-            if (0 <= time.sec + shift && time.sec + shift <= 59){
+            if (time.sec + shift < 0){
+                time.sec = 99;
+            } else if(time.sec + shift > 59){
+                time.sec = 0;
+            } else{
                 time.sec += shift;
             }
             PostMessage(UD4, UDM_SETPOS32, 0, time.sec);
@@ -176,43 +206,33 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
     SetDlgItemInt(hwnd, INPUT1, timeToSecond(&time), 0);
     }
 }
-//创建按钮
+// 创建按钮
+// (HMENU)BUTTON2,        //子窗口ID
+// hAppInstance,         //应用程序的句柄，
 void CreateButton(HWND hwnd){
     CreateWindow (
-            TEXT("BUTTON"),
-            TEXT("确认"),
+            TEXT("BUTTON"), TEXT("确认"),
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
             200, 50,
             40, 20,
-            hwnd,
-            (HMENU)BUTTON1,        //子窗口ID
-            hAppInstance,         //应用程序的句柄，
-            NULL);
+            hwnd, (HMENU)BUTTON1, hAppInstance, NULL);
     CreateWindow (
-            TEXT("button"),
-            TEXT("取消"),
+            TEXT("button"), TEXT("取消"),
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
             250, 50,
             40, 20,
-            hwnd,
-            (HMENU)BUTTON2,        //子窗口ID
-            hAppInstance,         //应用程序的句柄，
-            NULL);
+            hwnd, (HMENU)BUTTON2, hAppInstance, NULL);
 }
 
 //创建输入框
 void CreateInput(HWND hwnd){
     //底部秒数编辑框
-    CreateWindow (
-            TEXT("edit"),
-            TEXT(""),
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
+    INP = CreateWindow (
+            TEXT("edit"), TEXT(""),
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON, // | ES_NUMBER, 仅限键入数字，复制粘贴不管用
             110, 50,
             MAX_INPUT_LEN, 20,
-            hwnd,
-            (HMENU)INPUT1,        //子窗口ID
-            hAppInstance,         //应用程序的句柄，
-            NULL);
+            hwnd, (HMENU)INPUT1, hAppInstance, NULL);
     //天，时，分，秒编辑框
     CreateWindow (//天
             TEXT("edit"), TEXT("1"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
@@ -295,6 +315,7 @@ int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，
     SendMessage(UD2, UDM_SETRANGE, 0, MAKELPARAM(0, 23));
     SendMessage(UD3, UDM_SETRANGE, 0, MAKELPARAM(0, 59));
     SendMessage(UD4, UDM_SETRANGE, 0, MAKELPARAM(0, 59));
+    EnableWindow(INP,0); // TODO 这里先置灰把。 文本框游标还是有问题
     ShowWindow(hwnd, SW_SHOW);
 
     //5.消息循环
@@ -327,19 +348,30 @@ LRESULT CALLBACK WindowProc(
             break;
             //按钮消息
         case WM_COMMAND: {
+            switch (HIWORD(wParam)) {
+                case EN_CHANGE:
+                    checkInput(hwnd, INPUT1, NULL, 8639999);
+                    int ccc = (int)GetDlgItemInt(hwnd, INPUT1, 0 ,0);
+                    SetDlgItemInt(hwnd, INPUT1, ccc ,0);
+            }
             switch (LOWORD(wParam)) {
                 case BUTTON1:
                     second = (int) GetDlgItemInt(hwnd,INPUT1,NULL,0);
-                    shutDown();
-                    PostQuitMessage(0);
+                    if (0 < second && second < 315360000){
+                        shutDown();
+                        PostQuitMessage(0);
+                    }
                     break;
                 case BUTTON2:
                     unShutDown();
                     PostQuitMessage(0);
                     break;
-                case INPUT1:
-                    checkInput(hwnd, INPUT1, NULL, 8639999);
-                    break;
+//                case WM_KEYDOWN:
+//                    printf("down %llu\n", wParam);
+//                    break;
+//                case WM_KEYUP:
+//                    printf("up %llu\n", wParam);
+//                    break;
                 case INPUT2:
                     checkInput(hwnd, INPUT2, UD1, 99);
                     break;
