@@ -69,6 +69,7 @@ void CreateText(HDC hdc){
 }
 // 检查输入合法性，以及数据联动
 void checkInput(HWND hwnd,int nIDDlgItem, HWND ud, int mmax){
+    printf("0");
     int input;
     if (nIDDlgItem == INPUT1){
         input = (int) GetDlgItemInt(hwnd, nIDDlgItem,NULL,0);
@@ -351,8 +352,6 @@ LRESULT CALLBACK WindowProc(
             switch (HIWORD(wParam)) {
                 case EN_CHANGE:
                     checkInput(hwnd, INPUT1, NULL, 8639999);
-                    int ccc = (int)GetDlgItemInt(hwnd, INPUT1, 0 ,0);
-                    SetDlgItemInt(hwnd, INPUT1, ccc ,0);
             }
             switch (LOWORD(wParam)) {
                 case BUTTON1:
