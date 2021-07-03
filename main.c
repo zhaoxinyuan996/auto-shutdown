@@ -30,12 +30,8 @@ void unShutDown(){
 }
 
 //创建按钮
-void CreateButton(HWND hwnd)
-{
-    HWND hwndPushButton1;
-    HWND hwndPushButton2;
-
-    hwndPushButton1 = CreateWindow (
+void CreateButton(HWND hwnd){
+    CreateWindow (
             TEXT("button"),
             TEXT("确认"),
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
@@ -45,7 +41,7 @@ void CreateButton(HWND hwnd)
             (HMENU)BUTTON1,        //子窗口ID
             hAppInstance,         //应用程序的句柄，                        
             NULL);
-    hwndPushButton2 = CreateWindow (
+    CreateWindow (
             TEXT("button"),
             TEXT("取消"),
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_DEFPUSHBUTTON,
@@ -56,10 +52,9 @@ void CreateButton(HWND hwnd)
             hAppInstance,         //应用程序的句柄，
             NULL);
 }
+
 //创建输入框
-
 void CreateInput(HWND hwnd){
-
     CreateWindow (
             TEXT("edit"),
             TEXT("3600"),
@@ -154,10 +149,9 @@ LRESULT CALLBACK WindowProc(
         }
             //按钮消息
         case WM_COMMAND: {
-            HWND controlHandle = (HWND)lParam;
             if (LOWORD(wParam) == BUTTON1) {
 
-                second = GetDlgItemInt(hwnd,INPUT1,NULL,0);
+                second = (int) GetDlgItemInt(hwnd,INPUT1,NULL,0);
                 shutDown();
                 PostQuitMessage(0);
             } else if (LOWORD(wParam) == BUTTON2) {
