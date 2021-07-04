@@ -55,8 +55,15 @@ void shutDown(){
     printf("%s", cmd);
 }
 void unShutDown(){
-    system("shutdown -a");
+//    system("shutdown -a");
 }
+
+void updateInput(HWND wind){
+    char t[10];
+    itoa(timeToSecond(&time),t, 10);
+    SendMessage(wind, WM_SETTEXT, 0, (LPARAM)TEXT(t));
+}
+
 void CreateText(HDC hdc){
     int start = 100;
     int top = 12;
@@ -68,90 +75,61 @@ void CreateText(HDC hdc){
     TextOut(hdc, 50, 50, "换算成秒：", 10);
 }
 // 检查输入合法性，以及数据联动
-void checkInput(HWND hwnd,int nIDDlgItem, HWND ud, int mmax){
-    printf("0");
+void checkInput(HWND hwnd,int nIDDlgItem, int mmax){
+//    printf("0");
     int input;
-    if (nIDDlgItem == INPUT1){
-        input = (int) GetDlgItemInt(hwnd, nIDDlgItem,NULL,0);
-    }else{
-        input = SendMessage(ud, UDM_GETPOS32, 0, 0);
-    }
-
+    input = (int) GetDlgItemInt(hwnd, nIDDlgItem,NULL,0);
     if (input > mmax){
-        if (nIDDlgItem == INPUT1) {
-            SetDlgItemInt(hwnd, nIDDlgItem, mmax,0);
-        } else{
-            switch (nIDDlgItem) {
-                case INPUT2:
-                    SendMessage(UD1, UDM_SETPOS32, 0, mmax);
-                    time.day = mmax;
-                    break;
-                case INPUT3:
-                    SendMessage(UD2, UDM_SETPOS32, 0, mmax);
-                    time.hour = mmax;
-                    break;
-                case INPUT4:
-                    SendMessage(UD3, UDM_SETPOS32, 0, mmax);
-                    time.min = mmax;
-                    break;
-                case INPUT5:
-                    SendMessage(UD4, UDM_SETPOS32, 0, mmax);
-                    time.sec = mmax;
-                    break;
-                default:
-                {}
-            }
-            SendMessage(ud, UDM_SETPOS32, 0, time.day);
-        }
-    }
-    // 秒 -> time
-    if (nIDDlgItem == INPUT1){
-        SecondToTime((int) GetDlgItemInt(hwnd, INPUT1,NULL,0));
-        SendMessage(UD1, UDM_SETPOS32, 0, time.day);
-        SendMessage(UD2, UDM_SETPOS32, 0, time.hour);
-        SendMessage(UD3, UDM_SETPOS32, 0, time.min);
-        SendMessage(UD4, UDM_SETPOS32, 0, time.sec);
-
-//        DestroyCaret();
-//        CreateCaret(INP, 0, 4, 18);
-//        ShowCaret(INP);
-//        SetFocus(INP);
-//        POINT point;
-//        SetCaretPos(60, 4); //TODO
-//        point.x = 600;
-//        point.y = 40;
-
-//        printf("%u\n", GetDlgItemText(INP, 0, 0, 0));
-
-
-    } else{  // time -> 秒
         switch (nIDDlgItem) {
             case INPUT2:
-                time.day = input;
+                PostMessage(UD1, UDM_SETPOS32, 0, mmax);
+                time.day = mmax;
                 break;
             case INPUT3:
-                time.hour = input;
+                PostMessage(UD2, UDM_SETPOS32, 0, mmax);
+                time.hour = mmax;
                 break;
             case INPUT4:
-                time.min = input;
+                PostMessage(UD3, UDM_SETPOS32, 0, mmax);
+                time.min = mmax;
                 break;
             case INPUT5:
-                time.sec = input;
+                PostMessage(UD4, UDM_SETPOS32, 0, mmax);
+                time.sec = mmax;
                 break;
-            default: {}
+            default:
+            {}
         }
-        SetDlgItemInt(hwnd, INPUT1, timeToSecond(&time), 0);
     }
+    // time -> 秒
+    switch (nIDDlgItem) {
+        case INPUT2:
+            time.day = input;
+            break;
+        case INPUT3:
+            time.hour = input;
+            break;
+        case INPUT4:
+            time.min = input;
+            break;
+        case INPUT5:
+            time.sec = input;
+            break;
+        default: {}
+    }
+    updateInput(INP);
+
 }
 
 // 按updown按钮的回调
-void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
+void callUpDown(WPARAM wParam, LPARAM lParam){ // wParam 控件id
     int shift;
     if (((LPNMUPDOWN) lParam)->iDelta >= 0){
         shift = -1;
     } else{
         shift = 1;
     }
+
     switch (wParam) {
         case UPDOWN1:
         {
@@ -180,7 +158,7 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
         case UPDOWN3:
         {
             if (time.min + shift < 0){
-                time.min = 99;
+                time.min = 59;
             } else if(time.min + shift > 59){
                 time.min = 0;
             } else{
@@ -192,7 +170,7 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
         case UPDOWN4:
         {
             if (time.sec + shift < 0){
-                time.sec = 99;
+                time.sec = 59;
             } else if(time.sec + shift > 59){
                 time.sec = 0;
             } else{
@@ -203,9 +181,9 @@ void callUpDown(HWND hwnd, WPARAM wParam, LPARAM lParam){ // wParam 控件id
         }
         default:
         {}
-    // 点击updown事件后刷新下面的秒
-    SetDlgItemInt(hwnd, INPUT1, timeToSecond(&time), 0);
     }
+    // 点击updown事件后刷新下面的秒 这个不用写，数值改变后会出发消息事件，消息事件中会统一处理
+//    updateInput(hwnd, INP, 0, 0);
 }
 // 创建按钮
 // (HMENU)BUTTON2,        //子窗口ID
@@ -312,11 +290,11 @@ int CALLBACK WinMain(                        //CALLBACK是一个宏，表示__stdcall，
     SetDlgItemInt(hwnd, INPUT1, timeToSecond(&time),0);
 
     //4.显示窗口
-    SendMessage(UD1, UDM_SETRANGE, 0, MAKELPARAM(0, 99));
+    SendMessage(UD1, UDM_SETRANGE, 0, MAKELPARAM(0, 99)); // 这4个命令必须有，要不事件消息会乱发导致判断出错，除非重写默认回调
     SendMessage(UD2, UDM_SETRANGE, 0, MAKELPARAM(0, 23));
     SendMessage(UD3, UDM_SETRANGE, 0, MAKELPARAM(0, 59));
     SendMessage(UD4, UDM_SETRANGE, 0, MAKELPARAM(0, 59));
-    EnableWindow(INP,0); // TODO 这里先置灰把。 文本框游标还是有问题
+    EnableWindow(INP,0); // 这里先置灰把。  编辑这个没实际意义
     ShowWindow(hwnd, SW_SHOW);
 
     //5.消息循环
@@ -350,38 +328,34 @@ LRESULT CALLBACK WindowProc(
             //按钮消息
         case WM_COMMAND: {
             switch (HIWORD(wParam)) {
+                // 数值改变
                 case EN_CHANGE:
-                    checkInput(hwnd, INPUT1, NULL, 8639999);
+                    switch (LOWORD(wParam)) {
+                        case INPUT2:
+                            checkInput(hwnd, INPUT2, 99);
+                            break;
+                        case INPUT3:
+                            checkInput(hwnd, INPUT3, 23);
+                            break;
+                        case INPUT4:
+                            checkInput(hwnd, INPUT4, 59);
+                            break;
+                        case INPUT5:
+                            checkInput(hwnd, INPUT5, 59);
+                            break;
+                    };
             }
             switch (LOWORD(wParam)) {
                 case BUTTON1:
                     second = (int) GetDlgItemInt(hwnd,INPUT1,NULL,0);
                     if (0 < second && second < 315360000){
                         shutDown();
-                        PostQuitMessage(0);
+//                        PostQuitMessage(0);
                     }
                     break;
                 case BUTTON2:
                     unShutDown();
-                    PostQuitMessage(0);
-                    break;
-//                case WM_KEYDOWN:
-//                    printf("down %llu\n", wParam);
-//                    break;
-//                case WM_KEYUP:
-//                    printf("up %llu\n", wParam);
-//                    break;
-                case INPUT2:
-                    checkInput(hwnd, INPUT2, UD1, 99);
-                    break;
-                case INPUT3:
-                    checkInput(hwnd, INPUT3, UD2, 23);
-                    break;
-                case INPUT4:
-                    checkInput(hwnd, INPUT4, UD3, 59);
-                    break;
-                case INPUT5:
-                    checkInput(hwnd, INPUT5, UD4, 59);
+//                    PostQuitMessage(0);
                     break;
                 default:
                 {}
@@ -399,7 +373,7 @@ LRESULT CALLBACK WindowProc(
         }
         //按上下按钮事件
         case WM_NOTIFY:
-            callUpDown(hwnd, wParam, lParam);
+            callUpDown(wParam, lParam);
         default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
