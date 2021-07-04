@@ -350,12 +350,12 @@ LRESULT CALLBACK WindowProc(
                     second = (int) GetDlgItemInt(hwnd,INPUT1,NULL,0);
                     if (0 < second && second < 315360000){
                         shutDown();
-//                        PostQuitMessage(0);
+                        PostQuitMessage(0);
                     }
                     break;
                 case BUTTON2:
                     unShutDown();
-//                    PostQuitMessage(0);
+                    PostQuitMessage(0);
                     break;
                 default:
                 {}
