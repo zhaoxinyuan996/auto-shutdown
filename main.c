@@ -35,7 +35,7 @@ HWND UD3;
 HWND UD4;
 
 HINSTANCE hAppInstance;    //应用程序句柄，因为要使用的地方太多需要定义成全局变量；在winmain函数中给它赋值
-char cmd[80] = "Shutdown -r -t ";
+char cmd[80] = "Shutdown -s -t ";
 char secondList[MAX_SECOND_LEN];
 int second;
 
@@ -48,7 +48,8 @@ void setupTime(){
 
 // 开关机函数
 void shutDown(){
-    strcat(cmd, itoa(second, secondList, 10));
+    itoa(second, secondList, 10);
+    strcat(cmd, secondList);
         system("shutdown -a");
         system(cmd);
     printf("%s\n", secondList);
