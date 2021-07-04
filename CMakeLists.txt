@@ -4,3 +4,5 @@ project(gui C)
 set(CMAKE_C_STANDARD 99)
 
 add_executable(gui main.c)
+
+list(APPEND SOURCES ${SOURCES_DIR}/resource/logo.rc)
