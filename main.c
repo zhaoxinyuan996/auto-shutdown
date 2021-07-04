@@ -55,7 +55,7 @@ void shutDown(){
     printf("%s", cmd);
 }
 void unShutDown(){
-//    system("shutdown -a");
+    system("shutdown -a");
 }
 
 void updateInput(HWND wind){
