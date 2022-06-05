@@ -1,3 +1,7 @@
+# 新版本正在制作中
+https://github.com/zhaoxinyuan996/auto-shutdown-py
+
+
 # auto-shutdown  
 
 
